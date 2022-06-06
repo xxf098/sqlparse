@@ -50,6 +50,30 @@ pub fn parse_no_grouping(sql: &str) -> Vec<Token> {
     stack.run(sql, false)
 }
 
+pub struct Formatter {
+    stack: engine::FilterStack,
+}
+
+
+impl Default for Formatter {
+    fn default() -> Self {
+        Self { stack: engine::FilterStack::new() }
+    }
+}
+
+impl Formatter {
+
+    pub fn format(&mut self, mut sql: &str, options: &mut formatter::FormatOption) -> String {
+        formatter::validate_options(options);
+        formatter::build_filter_stack(&mut self.stack, options);
+        if options.strip_whitespace { sql = sql.trim(); };
+        let tokens = self.stack.format(sql, options.grouping);
+        tokens.iter().map(|token| token.value.as_str()).collect()
+    }
+}
+
+
+// only for test
 pub fn format(mut sql: &str, options: &mut formatter::FormatOption) -> String {
     let mut stack = engine::FilterStack::new();
     formatter::validate_options(options);
