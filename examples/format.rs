@@ -13,6 +13,7 @@ fn main() {
     let mut f = Formatter::default();
     let mut formatter = FormatOption::default();
     formatter.reindent = true;
+    formatter.reindent_aligned = true;
     let formatted_sql = f.format(sql, &mut formatter);
     println!("{}", formatted_sql);
 }
