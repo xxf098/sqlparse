@@ -2,6 +2,7 @@ use super::keywords::{sql_regex, is_keyword, init_trie, RegexToken};
 use super::tokens::TokenType;
 use super::trie::{Trie};
 
+/// parsed sql token
 #[derive(Debug, Clone, PartialEq)]
 pub struct Token {
     pub typ: TokenType,
@@ -10,6 +11,7 @@ pub struct Token {
     pub normalized: String,
 }
 
+/// grouped tokens
 #[derive(Debug, Clone, PartialEq)]
 pub struct TokenList {
     // pub parent_type: TokenType,

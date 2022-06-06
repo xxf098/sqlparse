@@ -23,6 +23,8 @@ pub fn group(tokens: Vec<Token>) -> Vec<Token> {
     token_list.tokens
 }
 
+/// parse sql into grouped TokenList.
+/// only for test
 pub fn group_tokenlist(sql: &str) -> TokenList {
     let mut token_list = TokenList::from(sql);
     token_list.group();

@@ -1,3 +1,39 @@
+
+//! SQL Parser and Formatter for Rust
+//!
+//! Example code:
+//!
+//!
+//! ```
+//! use sqlparse::{FormatOption, format, Formatter};
+//!
+//! let sql = "SELECT a, b, 123, myfunc(b) \
+//!            FROM table_1 \
+//!            WHERE a > b AND b < 100 \
+//!            ORDER BY a DESC";
+//!
+//! let mut f = Formatter::default();
+//! let mut formatter = FormatOption::default();
+//! formatter.reindent = true;
+//! formatter.reindent_aligned = true;
+//! 
+//! let formatted_sql = f.format(sql, &mut formatter);
+//! println!("{}", formatted_sql);
+//!
+//! ```
+//! Output:
+//! 
+//! ```sql
+//! SELECT a,
+//!        b,
+//!        123,
+//!        myfunc(b)
+//!   FROM table_1
+//!  WHERE a > b
+//!    AND b < 100
+//!  ORDER BY a DESC
+//! ```
+
 mod engine;
 mod lexer;
 mod keywords;
@@ -9,9 +45,10 @@ mod trie;
 
 pub use tokens::TokenType;
 pub use lexer::{Token, TokenList};
-pub use formatter::{FormatOption, validate_options};
+pub use formatter::{FormatOption};
 pub use engine::grouping::group_tokenlist;
 
+/// parse sql
 pub struct Parser {
     stack: engine::FilterStack,
 }
@@ -38,18 +75,21 @@ impl Parser {
     }
 }
 
-// only for test
+/// parse sql into tokens,
+/// only for test
 pub fn parse(sql: &str) -> Vec<Token> {
     let stack = engine::FilterStack::new();
     stack.run(sql, true)
 }
 
-// only for test
+/// parse sql into grouped tokens,
+/// only for test
 pub fn parse_no_grouping(sql: &str) -> Vec<Token> {
     let stack = engine::FilterStack::new();
     stack.run(sql, false)
 }
 
+/// format sql with multiple options
 pub struct Formatter {
     stack: engine::FilterStack,
 }
@@ -73,7 +113,8 @@ impl Formatter {
 }
 
 
-// only for test
+/// format sql to string,
+/// only for test
 pub fn format(mut sql: &str, options: &mut formatter::FormatOption) -> String {
     let mut stack = engine::FilterStack::new();
     formatter::validate_options(options);

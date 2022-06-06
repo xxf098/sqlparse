@@ -5,9 +5,12 @@ use super::filters::{
     ReindentFilter, AlignedIndentFilter,
 };
 
+/// sql format options
 #[derive(Default)]
 pub struct FormatOption<'a> {
+    /// upper, lower
     pub keyword_case: &'a str,
+    /// upper, lower
     pub identifier_case: &'a str,
     pub output_format: &'a str,
     pub strip_comments: bool,
