@@ -8,6 +8,10 @@ documentation = "https://github.com/xxf098/sqlparse"
 keywords = [ "ansi", "sql", "lexer", "parser" ]
 repository = "https://github.com/xxf098/sqlparse"
 license = "BSD-3-Clause"
+include = [
+    "src/**/*.rs",
+    "Cargo.toml",
+]
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
