@@ -1,7 +1,14 @@
 [package]
 name = "sqlparse"
+description = "A SQL Parser and Formatter for Rust"
 version = "0.1.0"
-edition = "2018"
+authors = ["xxf098 <xxf098@protonmail.com>"]
+homepage = "https://github.com/xxf098/sqlparse"
+documentation = "https://github.com/xxf098/sqlparse"
+keywords = [ "ansi", "sql", "lexer", "parser" ]
+repository = "https://github.com/xxf098/sqlparse"
+license = "BSD-3-Clause"
+edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
