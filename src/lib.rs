@@ -5,7 +5,7 @@
 //!
 //!
 //! ```
-//! use sqlparse::{FormatOption, format, Formatter};
+//! use sqlparse::{FormatOption, Formatter};
 //!
 //! let sql = "SELECT a, b, 123, myfunc(b) \
 //!            FROM table_1 \
