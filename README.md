@@ -12,11 +12,14 @@ To format a simple SELECT statement:
     ORDER BY a DESC";
 
     let mut f = Formatter::default();
-    let mut formatter = FormatOption::default();
-    formatter.reindent = true;
-    formatter.reindent_aligned = true;
+    let mut options = FormatOption::default();
+    options.reindent = true;
+    options.indent_width = 2;
+    options.indent_char = " ";
+    options.reindent_aligned = true;
+
     
-    let formatted_sql = f.format(sql, &mut formatter);
+    let formatted_sql = f.format(sql, &mut options);
     println!("{}", formatted_sql);
 
 ```
