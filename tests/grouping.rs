@@ -143,6 +143,9 @@ fn test_grouping_identifier_name_wildcard() {
     let sql = "a.*";
     let token_list = group_tokenlist(sql);
     assert_eq!(token_list.tokens[0].children.len(), 3);
+    let id = &token_list.tokens[0];
+    assert_eq!(id.typ, TokenType::Identifier);
+    assert_eq!(id.get_name().unwrap(), "*");
 }
 
 #[test]
@@ -337,15 +340,22 @@ fn test_grouping_typecast() {
 fn test_grouping_alias() {
     let sql = "select foo as bar from mytable";
     let token_list = group_tokenlist(sql);
+    let id = &token_list.tokens[2];
     let token_list = &token_list.tokens[2].children;
     assert_eq!(token_list.tokens[0].value, "foo");
     assert_eq!(token_list.tokens[token_list.len()-1].value, "bar");
 
+    assert_eq!(id.get_real_name().unwrap(), "foo");
+    assert_eq!(id.get_alias().unwrap(), "bar");
+
     let sql = "select foo from mytable t1";
     let token_list = group_tokenlist(sql);
+    let id = &token_list.tokens[6];
     let token_list = &token_list.tokens[6].children;
     assert_eq!(token_list.tokens[0].value, "mytable");
     assert_eq!(token_list.tokens[token_list.len()-1].value, "t1");
+    assert_eq!(id.get_real_name().unwrap(), "mytable");
+    assert_eq!(id.get_alias().unwrap(), "t1");
 
     let sql = "select foo::integer as bar from mytable";
     let token_list = group_tokenlist(sql);
@@ -483,6 +493,8 @@ fn test_grouping_identifier_consumes_ordering() {
     assert_eq!(ids.len(), 3);
     assert_eq!(token_list.tokens[ids[0]].value, "c1 desc");
     assert_eq!(token_list.tokens[ids[1]].value, "c2");
+    assert_eq!(token_list.tokens[ids[0]].get_name().unwrap(), "c1");
+    assert_eq!(token_list.tokens[ids[1]].get_name().unwrap(), "c2");
 }
 
 #[test]
@@ -641,14 +653,21 @@ fn test_grouping_aliased_column_without_as() {
     let sql = "foo bar";
     let token_list = group_tokenlist(sql);
     assert_eq!(token_list.len(), 1);
+    let id = &token_list.tokens[0];
     let token_list = &token_list.tokens[0].children;
     assert_eq!(token_list.tokens[0].value, "foo");
     assert_eq!(token_list.tokens.last().unwrap().value, "bar");
+    assert_eq!(id.get_real_name().unwrap(), "foo");
+    assert_eq!(id.get_alias().unwrap(), "bar");
 
     let sql = "foo.bar baz";
     let token_list = group_tokenlist(sql);
+    let id = &token_list.tokens[0];
     let token_list = &token_list.tokens[0].children;
     assert_eq!(token_list.tokens.last().unwrap().value, "baz");
+    assert_eq!(id.get_parent_name().unwrap(), "foo");
+    assert_eq!(id.get_real_name().unwrap(), "bar");
+    assert_eq!(id.get_alias().unwrap(), "baz");
 }
 
 #[test]
