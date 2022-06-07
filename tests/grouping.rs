@@ -145,6 +145,18 @@ fn test_grouping_identifier_name_wildcard() {
     assert_eq!(token_list.tokens[0].children.len(), 3);
 }
 
+#[test]
+fn test_grouping_identifier_invalid1() {
+    let sql = "a.";
+    let token_list = group_tokenlist(sql);
+    let id = &token_list.tokens[0];
+    assert_eq!(id.typ, TokenType::Identifier);
+    assert_eq!(id.get_alias(), None);
+    assert_eq!(id.get_name(), None);
+    assert_eq!(id.get_real_name(), None);
+    assert_eq!(id.get_parent_name().unwrap(), "a");
+}
+
 
 #[test]
 fn test_grouping_identifier_invalid_in_middle() {

@@ -478,8 +478,7 @@ impl TokenList {
             if valid_next { (pidx, nidx) } else { (pidx, tidx) }
         }
 
-        group_internal(self, TokenType::Identifier, matcher, 
-            valid_prev, valid_next, post, true, true);
+        group_internal(self, TokenType::Identifier, matcher, valid_prev, valid_next, post, true, true);
      }
 
     fn group_as(&mut self) {
@@ -745,7 +744,7 @@ fn group_internal(
                 let next_ = tlist.token_idx(nidx);
                 // println!("T: {:?} P: {:?} N: {:?}", token, prev_, next_);
                 if pidx.is_some() && prev_.is_some() && valid_prev(prev_.as_ref()) && valid_next(next_) {
-                    let (from_idx, to_idx) = post(tlist, pidx.unwrap(), idx, nidx.unwrap());
+                    let (from_idx, to_idx) = post(tlist, pidx.unwrap(), idx, nidx.unwrap_or(tlist.len()));
                     tlist.group_tokens(group_type.clone(), from_idx, to_idx+1, extend);
                     pidx = Some(from_idx);
                     prev_ = tlist.token_idx(pidx).map(|t| t.clone());
