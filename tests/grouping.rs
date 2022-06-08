@@ -674,8 +674,17 @@ fn test_grouping_aliased_column_without_as() {
 fn test_grouping_qualified_function() {
     let sql = "foo()";
     let token_list = group_tokenlist(sql);
+    let id = &token_list.tokens[0];
     let token_list = &token_list.tokens[0].children;
     assert_eq!(token_list.tokens[0].value, "foo");
+    assert_eq!(id.get_parent_name(), None);
+    assert_eq!(id.get_real_name().unwrap(), "foo");
+
+    let sql = "foo.bar()";
+    let token_list = group_tokenlist(sql);
+    let id = &token_list.tokens[0];
+    assert_eq!(id.get_parent_name().unwrap(), "foo");
+    assert_eq!(id.get_real_name().unwrap(), "bar");
 }
 
 #[test]
@@ -683,14 +692,21 @@ fn test_grouping_aliased_function_without_as() {
     let sql = "foo() bar";
     let token_list = group_tokenlist(sql);
     assert_eq!(token_list.len(), 1);
+    let id = &token_list.tokens[0];
     let token_list = &token_list.tokens[0].children;
     assert_eq!(token_list.tokens.last().unwrap().value, "bar");
+    assert_eq!(id.get_real_name().unwrap(), "foo");
+    assert_eq!(id.get_alias().unwrap(), "bar");
 
     let sql = "foo.bar() baz";
     let token_list = group_tokenlist(sql);
     assert_eq!(token_list.len(), 1);
+    let id = &token_list.tokens[0];
     let token_list = &token_list.tokens[0].children;
     assert_eq!(token_list.tokens.last().unwrap().value, "baz");
+    assert_eq!(id.get_parent_name().unwrap(), "foo");
+    assert_eq!(id.get_real_name().unwrap(), "bar");
+    assert_eq!(id.get_alias().unwrap(), "baz");
 }
 
 #[test]
@@ -698,8 +714,10 @@ fn test_grouping_aliased_literal_without_as() {
     let sql = "1 foo";
     let token_list = group_tokenlist(sql);
     assert_eq!(token_list.len(), 1);
+    let id = &token_list.tokens[0];
     let token_list = &token_list.tokens[0].children;
     assert_eq!(token_list.tokens.last().unwrap().value, "foo");
+    assert_eq!(id.get_alias().unwrap(), "foo");
 }
 
 #[test]
