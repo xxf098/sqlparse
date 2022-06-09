@@ -1,4 +1,4 @@
-use sqlparse::{TokenType, parse_no_grouping, group_tokenlist};
+use sqlparse::{TokenType, parse_no_grouping, parse, group_tokenlist};
 
 #[test]
 fn test_tokenize_simple() {
@@ -98,4 +98,14 @@ fn test_parse_union() {
     let token_list = group_tokenlist(sql);
     assert_eq!(token_list.len(), 1);
     assert_eq!(token_list.tokens[0].typ, TokenType::Keyword);
+}
+
+#[test]
+fn test_parse_endifloop() {
+    let sqls = vec!["END IF", "END   IF", "END\t\nIF", "END LOOP", "END   LOOP", "END\t\nLOOP"];
+    for sql in sqls {
+        let tokens = parse(sql);
+        assert_eq!(tokens.len(), 1);
+        assert_eq!(tokens[0].typ, TokenType::Keyword);
+    }
 }
