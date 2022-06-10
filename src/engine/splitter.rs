@@ -29,7 +29,7 @@ impl StatementSplitter {
             return 1;
         } else if token.typ == TokenType::Punctuation && token.value == ")" {
             return -1;
-        } else if token.typ == TokenType::Keyword {
+        } else if !token.is_keyword() {
             return 0;
         }
 
@@ -54,14 +54,12 @@ impl StatementSplitter {
             self.begin_depth = if self.begin_depth > 1 { self.begin_depth -1 } else { 0 };
             return -1
         }
-        if (unified == "IF" || unified == "FOR" || unified == "WHILE" || unified == "CASE") &&
-             self.is_create && self.begin_depth > 0 {
+        if (unified == "IF" || unified == "FOR" || unified == "WHILE" || unified == "CASE") && self.is_create && self.begin_depth > 0 {
             return 1
         }
         if unified == "END IF" || unified == "END FOR" || unified == "END WHILE" {
             return -1
         }
-
         0
     }
 
@@ -100,5 +98,19 @@ mod tests {
         let mut splitter = StatementSplitter::default();
         let stmts = splitter.process(tokens);
         assert_eq!(stmts.len(), 3);
+    }
+
+    #[test]
+    fn test_parse_splitter_function() {
+        let sql = r#"   CREATE FUNCTION a(x VARCHAR(20)) RETURNS VARCHAR(20)
+        BEGIN
+         DECLARE y VARCHAR(20);
+         RETURN x;
+        END;
+        SELECT * FROM a.b;"#;
+        let tokens = parse_no_grouping(sql);
+        let mut splitter = StatementSplitter::default();
+        let stmts = splitter.process(tokens);
+        assert_eq!(stmts.len(), 2);
     }
 }
