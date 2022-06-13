@@ -1,7 +1,7 @@
 
 //! SQL Parser and Formatter for Rust
 //!
-//! Example code:
+//! Example code, see more on Github:
 //!
 //!
 //! ```

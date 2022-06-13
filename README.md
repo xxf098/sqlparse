@@ -54,3 +54,29 @@ SELECT a,
    AND b < 100
  ORDER BY a DESC
 ```
+
+To format multiple statements:
+
+```rust
+  use sqlparse::{FormatOption, Formatter};
+  let sql = "SELECT firstname, lastname, email FROM employees WHERE employeeNumber = 1056; UPDATE employees SET email = 'mary.patterson@classicmodelcars.com' WHERE employeeNumber = 1056;";
+  let mut formatter = FormatOption::default_reindent();
+  formatter.reindent_aligned = true;
+  let formatted_sql = f.format(sql, &mut formatter);
+  println!("{}", formatted_sql);
+
+```
+
+outputs
+```sql
+SELECT firstname,
+       lastname,
+       email
+  FROM employees
+ WHERE employeeNumber = 1056;
+UPDATE employees
+   SET email = 'mary.patterson@classicmodelcars.com'
+ WHERE employeeNumber = 1056;
+```
+
+see more on ./examples folder
