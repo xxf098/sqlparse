@@ -26,7 +26,7 @@ pub struct FormatOption<'a> {
     pub indent_char: &'a str,
     pub wrap_after: usize,
     pub comma_first: bool,
-    pub right_margin: bool,
+    pub right_margin: usize,
     pub grouping: bool,
 }
 
@@ -56,6 +56,10 @@ pub fn validate_options(options: &mut FormatOption) {
         options.strip_whitespace = true
     }
     options.indent_char = " ";
+    if options.indent_tabs {
+        options.indent_char = "\t";
+    }
+    options.indent_width = usize::max(options.indent_width, 2);
 }
 
 
