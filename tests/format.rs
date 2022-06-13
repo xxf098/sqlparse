@@ -1,5 +1,19 @@
 use sqlparse::{FormatOption, format};
 
+#[test]
+fn test_aligned_stmts() {
+    let sql = "select foo; select bar";
+    let mut formatter = FormatOption::default_reindent();
+    let formatted_sql = format(sql, &mut formatter);
+    assert_eq!(formatted_sql, "select foo;\nselect bar");
+    let sql = "select foo";
+    let formatted_sql = format(sql, &mut formatter);
+    assert_eq!(formatted_sql, sql);
+    let sql = "select foo; -- test\n select bar";
+    let formatted_sql = format(sql, &mut formatter);
+    assert_eq!(formatted_sql, "select foo; -- test\n\nselect bar");
+}
+
 
 #[test]
 fn test_aligned_basic() {

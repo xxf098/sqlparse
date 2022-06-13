@@ -2,7 +2,7 @@
 use sqlparse::{Token, parse_multi};
 
 fn to_string(tokens: &[Token]) -> String {
-    tokens.iter().map(|t| t.value.clone()).collect::<Vec<_>>().join("")
+    tokens.iter().map(|t| t.value.as_str()).collect::<Vec<_>>().join("")
 }
 
 

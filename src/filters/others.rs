@@ -14,9 +14,10 @@ impl StripWhitespaceFilter {
     fn stripws_default(tokens: &mut Vec<Token>) {
         let mut last_was_ws = false;
         let mut is_first_char = true;
-        for token in tokens.iter_mut() {
+        let n = tokens.len();
+        for (i, token) in tokens.iter_mut().enumerate() {
             if token.is_whitespace() {
-                token.value = if last_was_ws || is_first_char { "".to_string() } else { " ".to_string() };
+                token.value = if last_was_ws || is_first_char || i+1 == n { "".to_string() } else { " ".to_string() };
             }
             last_was_ws = token.is_whitespace();
             is_first_char = false;

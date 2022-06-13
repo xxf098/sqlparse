@@ -117,10 +117,9 @@ impl Formatter {
         formatter::build_filter_stack(&mut self.stack, options);
         if options.strip_whitespace { sql = sql.trim(); };
         let tokens = self.stack.format(sql, options.grouping);
-        tokens.iter().map(|token| token.value.as_str()).collect()
+        tokens.iter().map(|token| token.iter().map(|t| t.value.as_str()).collect::<String>()).collect::<Vec<_>>().join("\n")
     }
 }
-
 
 /// format sql to string,
 /// only for test
@@ -133,7 +132,7 @@ pub fn format(mut sql: &str, options: &mut formatter::FormatOption) -> String {
     // for token in &tokens{
     //     println!("{:?}", token);
     // }
-    tokens.iter().map(|token| token.value.as_str()).collect()
+    tokens.iter().map(|token| token.iter().map(|t| t.value.as_str()).collect::<String>()).collect::<Vec<_>>().join("\n")
 }
 
 #[cfg(test)]
