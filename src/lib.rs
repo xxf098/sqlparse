@@ -82,6 +82,15 @@ pub fn parse(sql: &str) -> Vec<Token> {
     stack.run(sql, true)
 }
 
+/// parse multiple sqls into tokens,
+/// only for test
+pub fn parse_multi(sql: &str) -> Vec<Vec<Token>> {
+    let stack = engine::FilterStack::new();
+    let tokens = stack.run(sql, true);
+    let mut splitter = engine::StatementSplitter::default();
+    splitter.process(tokens)
+}
+
 /// parse sql into grouped tokens,
 /// only for test
 pub fn parse_no_grouping(sql: &str) -> Vec<Token> {
