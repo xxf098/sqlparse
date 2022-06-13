@@ -2,6 +2,15 @@ use super::{StmtFilter, TokenListFilter};
 use crate::lexer::{Token, TokenList};
 use crate::tokens::{TokenType};
 
+pub struct StripCommentsFilter { }
+
+impl StmtFilter for StripCommentsFilter {
+
+    fn process(&self, _tokens: &mut Vec<Token>) {
+     
+    }
+}
+
 pub struct StripWhitespaceFilter { }
 
 impl StripWhitespaceFilter {

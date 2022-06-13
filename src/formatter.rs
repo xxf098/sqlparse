@@ -1,8 +1,8 @@
 use super::engine::FilterStack;
 use super::filters::{
     Filter, StmtFilter, TokenListFilter,
-    KeywordCaseFilter, IdentifierCaseFilter, StripWhitespaceFilter, StripBeforeNewline, SpacesAroundOperatorsFilter,
-    ReindentFilter, AlignedIndentFilter,
+    KeywordCaseFilter, IdentifierCaseFilter, StripWhitespaceFilter, StripCommentsFilter, StripBeforeNewline, 
+    SpacesAroundOperatorsFilter, ReindentFilter, AlignedIndentFilter,
 };
 
 /// sql format options
@@ -65,22 +65,29 @@ pub fn validate_options(options: &mut FormatOption) {
 
 pub fn build_filter_stack(stack: &mut FilterStack, options: &mut FormatOption) {
     if options.keyword_case.len() > 0 {
-        let filter = Box::new(KeywordCaseFilter::new("upper")) as Box<dyn Filter>;
+        let keyword_case = options.keyword_case.to_lowercase();
+        let filter = Box::new(KeywordCaseFilter::new(&keyword_case)) as Box<dyn Filter>;
         stack.preprocess.push(filter);
     }
     if options.identifier_case.len() > 0 {
-        let filter = Box::new(IdentifierCaseFilter::new("upper")) as Box<dyn Filter>;
+        let identifier_case = &options.identifier_case.to_lowercase();
+        let filter = Box::new(IdentifierCaseFilter::new(identifier_case)) as Box<dyn Filter>;
         stack.preprocess.push(filter);
-    }
-    if options.strip_whitespace {
-        options.grouping = true;
-        let filter = Box::new(StripWhitespaceFilter{}) as Box<dyn StmtFilter>;
-        stack.stmtprocess.push(filter);
     }
     if options.use_space_around_operators {
         options.grouping = true;
         let filter = Box::new(SpacesAroundOperatorsFilter{}) as Box<dyn TokenListFilter>;
         stack.tlistprocess.push(filter);
+    }
+    if options.strip_comments {
+        options.grouping = true;
+        let filter = Box::new(StripCommentsFilter{}) as Box<dyn StmtFilter>;
+        stack.stmtprocess.push(filter);
+    }
+    if options.strip_whitespace || options.reindent {
+        options.grouping = true;
+        let filter = Box::new(StripWhitespaceFilter{}) as Box<dyn StmtFilter>;
+        stack.stmtprocess.push(filter);
     }
     if options.reindent {
         options.grouping = true;
@@ -103,6 +110,8 @@ pub fn build_filter_stack(stack: &mut FilterStack, options: &mut FormatOption) {
         let filter = Box::new(filter) as Box<dyn TokenListFilter>;
         stack.tlistprocess.push(filter);
     }
+
+    // TODO: right_margin
 
     let filter = Box::new(StripBeforeNewline{}) as Box<dyn StmtFilter>;
     stack.postprocess.push(filter);
