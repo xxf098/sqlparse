@@ -113,4 +113,45 @@ mod tests {
         let stmts = splitter.process(tokens);
         assert_eq!(stmts.len(), 2);
     }
+
+    #[test]
+    fn test_parse_splitter_function1() {
+        let sql = r#"   CREATE FUNCTION a(x VARCHAR(20)) RETURNS VARCHAR(20)
+        BEGIN
+         DECLARE y VARCHAR(20);
+         IF (1 = 1) THEN
+         SET x = y;
+         END IF;
+         RETURN x;
+        END;
+        SELECT * FROM a.b;"#;
+        let tokens = parse_no_grouping(sql);
+        let mut splitter = StatementSplitter::default();
+        let stmts = splitter.process(tokens);
+        assert_eq!(stmts.len(), 2);
+    }
+
+    #[test]
+    fn test_parse_splitter_multi() {
+        let sql = r#"CREATE OR REPLACE RULE ruled_tab_2rules AS ON INSERT
+TO public.ruled_tab
+DO instead (
+select 1;
+select 2;
+);"#;
+        let tokens = parse_no_grouping(sql);
+        let mut splitter = StatementSplitter::default();
+        let stmts = splitter.process(tokens);
+        assert_eq!(stmts.len(), 1);
+    }
+
+    #[test]
+    fn test_parse_splitting_at_and_backticks() {
+        let sql = "grant foo to user1@`myhost`; grant bar to user1@`myhost`;";
+        let tokens = parse_no_grouping(sql);
+        let mut splitter = StatementSplitter::default();
+        let stmts = splitter.process(tokens);
+        assert_eq!(stmts.len(), 2);
+    }
+
 }
