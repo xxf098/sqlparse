@@ -49,6 +49,36 @@ fn test_strip_comments_multi() {
 }
 
 #[test]
+fn test_strip_comments_preserves_linebreak() {
+    let sql = "select * -- a comment\r\nfrom foo";
+    let mut formatter = FormatOption::default();
+    formatter.strip_comments = true;
+    let formatted_sql = format(sql, &mut formatter);
+    assert_eq!(formatted_sql, "select *\r\nfrom foo");
+    let sql = "select * -- a comment\nfrom foo";
+    let formatted_sql = format(sql, &mut formatter);
+    assert_eq!(formatted_sql, "select *\nfrom foo");
+    let sql = "select * -- a comment\rfrom foo";
+    let formatted_sql = format(sql, &mut formatter);
+    assert_eq!(formatted_sql, "select *\rfrom foo");
+    let sql = "select * -- a comment\r\n\r\nfrom foo";
+    let formatted_sql = format(sql, &mut formatter);
+    assert_eq!(formatted_sql, "select *\r\nfrom foo");
+    let sql = "select * -- a comment\n\nfrom foo";
+    let formatted_sql = format(sql, &mut formatter);
+    assert_eq!(formatted_sql, "select *\nfrom foo");
+}
+
+#[test]
+fn test_strip_ws1() {
+    let sql = "select\n* from      foo\n\twhere  ( 1 = 2 )\n";
+    let mut formatter = FormatOption::default();
+    formatter.strip_whitespace = true;
+    let formatted_sql = format(sql, &mut formatter);
+    assert_eq!(formatted_sql, "select * from foo where (1 = 2)");
+}
+
+#[test]
 fn test_aligned_stmts() {
     let sql = "select foo; select bar";
     let mut formatter = FormatOption::default_reindent();
