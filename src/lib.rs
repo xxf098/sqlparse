@@ -250,7 +250,6 @@ mod tests {
         let mut formatter = formatter::FormatOption::default_reindent();
         let formatted_sql = format(sql, &mut formatter);
         assert_eq!(formatted_sql, vec![
-            "",
             "and foo between 1 and 2",
             "and bar = 3",
         ].join("\n"))

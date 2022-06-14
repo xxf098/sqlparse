@@ -194,6 +194,10 @@ impl StmtFilter for StripBeforeNewline {
     fn process(&self, tokens: &mut Vec<Token>) {
         let mut remove_indexes = vec![];
         let mut is_before_white = false;
+        // remove leading whitespace
+        if tokens.get(0).map(|t| t.is_whitespace()).unwrap_or(false) {
+            remove_indexes.push(0)
+        }
         for (i, token) in tokens.iter_mut().enumerate() {         
             if token.is_group() {
                 self.process(&mut token.children.tokens);
