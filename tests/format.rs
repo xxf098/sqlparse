@@ -1,6 +1,15 @@
 use sqlparse::{FormatOption, format};
 
 #[test]
+fn test_strip_comments_single() {
+    let sql = "select *-- statement starts here\nfrom foo";
+    let mut formatter = FormatOption::default();
+    formatter.strip_comments = true;
+    let formatted_sql = format(sql, &mut formatter);
+    assert_eq!(formatted_sql, "select *\nfrom foo");
+}
+
+#[test]
 fn test_aligned_stmts() {
     let sql = "select foo; select bar";
     let mut formatter = FormatOption::default_reindent();

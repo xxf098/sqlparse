@@ -16,7 +16,7 @@ impl Default for StripCommentsFilter {
 impl StripCommentsFilter {
 
     fn get_next_comment(&self, token_list: &mut TokenList, start: usize) -> Option<usize> {
-        let ttypes = vec![TokenType::CommentSingle, TokenType::CommentMultiline];
+        let ttypes = vec![TokenType::Comment, TokenType::CommentSingle, TokenType::CommentMultiline];
         token_list.token_next_by(&ttypes, None, start)
     }
 
@@ -39,17 +39,20 @@ impl StripCommentsFilter {
             let nidx = token_list.token_next(idx, false);
             let ntoken = token_list.token_idx(nidx);
             let insert_token = self.get_insert_token(token);
+            let mut step: isize = 0;
             if ptoken.is_none() || ntoken.is_none() ||
                  ptoken.map(|p| p.is_whitespace()).unwrap_or(false) || ptoken.map(|p| p.typ == TokenType::Punctuation && p.value == "(").unwrap_or(false) ||
                  ntoken.map(|p| p.is_whitespace()).unwrap_or(false) || ntoken.map(|p| p.typ == TokenType::Punctuation && p.value == ")").unwrap_or(false)  {
                     if ptoken.is_some() && !ptoken.map(|p| p.typ == TokenType::Punctuation && p.value == "(").unwrap() {
-                        token_list.insert_after(idx, insert_token, false)
+                        token_list.insert_after(idx, insert_token, false);
+                        step += 1;
                     }
                     token_list.tokens.remove(idx);
+                    step -= 1;
             } else {
                 token_list.tokens[idx] = insert_token;
             }
-            tidx = self.get_next_comment(token_list, idx + 1);
+            tidx = self.get_next_comment(token_list, idx + (step + 1) as usize);
         }
     }
 }
@@ -58,9 +61,12 @@ impl TokenListFilter for StripCommentsFilter {
 
     fn process(&mut self, token_list: &mut TokenList) {
         for token in token_list.tokens.iter_mut() {
-            if token.is_group() { self.process_internal(&mut token.children); }
+            if token.is_group() { 
+                self.process_internal(&mut token.children); 
+                token.update_value();
+            }
         }
-        self.process_internal(token_list)
+        self.process_internal(token_list);
     }
 }
 
