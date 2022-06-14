@@ -28,6 +28,27 @@ fn test_strip_comments_single() {
 }
 
 #[test]
+fn test_strip_comments_multi() {
+    let sql = "/* sql starts here */\nselect";
+    let mut formatter = FormatOption::default();
+    formatter.strip_comments = true;
+    let formatted_sql = format(sql, &mut formatter);
+    assert_eq!(formatted_sql, "select");
+    let sql = "/* sql starts here */ select";
+    let formatted_sql = format(sql, &mut formatter);
+    assert_eq!(formatted_sql, "select");
+    let sql = "/*\n * sql starts here\n */\nselect";
+    let formatted_sql = format(sql, &mut formatter);
+    assert_eq!(formatted_sql, "select");
+    let sql = "select (/* sql starts here */ select 2)";
+    let formatted_sql = format(sql, &mut formatter);
+    assert_eq!(formatted_sql, "select (select 2)");
+    let sql = "select (/* sql /* starts here */ select 2)";
+    let formatted_sql = format(sql, &mut formatter);
+    assert_eq!(formatted_sql, "select (select 2)");
+}
+
+#[test]
 fn test_aligned_stmts() {
     let sql = "select foo; select bar";
     let mut formatter = FormatOption::default_reindent();
