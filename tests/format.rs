@@ -82,6 +82,23 @@ fn test_strip_ws1() {
 }
 
 #[test]
+fn test_notransform_of_quoted_crlf() {
+    let sql = "SELECT some_column LIKE 'value\r'";
+    let mut formatter = FormatOption::default();
+    let formatted_sql = format(sql, &mut formatter);
+    assert_eq!(formatted_sql, "SELECT some_column LIKE 'value\r'");
+    let sql = "SELECT some_column LIKE 'value\r'\r\nWHERE id = 1\n";
+    let formatted_sql = format(sql, &mut formatter);
+    assert_eq!(formatted_sql, "SELECT some_column LIKE 'value\r'\r\nWHERE id = 1\n");
+    let sql = "SELECT some_column LIKE 'value\\'\r' WHERE id = 1\r";
+    let formatted_sql = format(sql, &mut formatter);
+    assert_eq!(formatted_sql, "SELECT some_column LIKE 'value\\'\r' WHERE id = 1\r");
+    let sql = "SELECT some_column LIKE 'value\\\\\\'\r' WHERE id = 1\r\n";
+    let formatted_sql = format(sql, &mut formatter);
+    assert_eq!(formatted_sql, "SELECT some_column LIKE 'value\\\\\\'\r' WHERE id = 1\r\n");
+}
+
+#[test]
 fn test_preserve_ws() {
     let sql = "select\n* /* foo */  from bar ";
     let mut formatter = FormatOption::default();
