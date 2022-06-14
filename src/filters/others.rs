@@ -189,18 +189,18 @@ impl TokenListFilter for SpacesAroundOperatorsFilter {
 // trim space before newline
 pub struct StripBeforeNewline{}
 
-impl StmtFilter for StripBeforeNewline {
+impl StripBeforeNewline {
 
-    fn process(&self, tokens: &mut Vec<Token>) {
+    fn process_internal(&self, tokens: &mut Vec<Token>, level: usize) {
         let mut remove_indexes = vec![];
         let mut is_before_white = false;
         // remove leading whitespace
-        if tokens.get(0).map(|t| t.is_whitespace()).unwrap_or(false) {
+        if level == 0 && tokens.get(0).map(|t| t.is_whitespace()).unwrap_or(false) {
             remove_indexes.push(0)
         }
         for (i, token) in tokens.iter_mut().enumerate() {         
             if token.is_group() {
-                self.process(&mut token.children.tokens);
+                self.process_internal(&mut token.children.tokens, level+1);
             }
             if is_before_white && token.value.starts_with("\n") && i > 0 {
                 remove_indexes.push(i-1);
@@ -222,6 +222,13 @@ impl StmtFilter for StripBeforeNewline {
                 remove_count += 1;
             }
         });
+    }
+}
+
+impl StmtFilter for StripBeforeNewline {
+
+    fn process(&self, tokens: &mut Vec<Token>) {
+        self.process_internal(tokens, 0)
     }
 
 } 
