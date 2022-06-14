@@ -76,6 +76,18 @@ fn test_strip_ws1() {
     formatter.strip_whitespace = true;
     let formatted_sql = format(sql, &mut formatter);
     assert_eq!(formatted_sql, "select * from foo where (1 = 2)");
+    let sql = "select -- foo\nfrom    bar\n";
+    let formatted_sql = format(sql, &mut formatter);
+    assert_eq!(formatted_sql, "select -- foo\nfrom bar");
+}
+
+#[test]
+fn test_preserve_ws() {
+    let sql = "select\n* /* foo */  from bar ";
+    let mut formatter = FormatOption::default();
+    formatter.strip_whitespace = true;
+    let formatted_sql = format(sql, &mut formatter);
+    assert_eq!(formatted_sql, "select * /* foo */ from bar");
 }
 
 #[test]

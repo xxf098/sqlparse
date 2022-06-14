@@ -212,25 +212,6 @@ mod tests {
         assert_eq!(formatted_sql, "select * from users where id = 1;");
     }
 
-
-    #[test]
-    fn test_strip_ws1() {
-        let sql = "select\n* from      foo\n\twhere  ( 1 = 2 )\n";
-        let mut formatter = formatter::FormatOption::default();
-        formatter.strip_whitespace = true;
-        let formatted_sql = format(sql, &mut formatter);
-        assert_eq!(formatted_sql, "select * from foo where (1 = 2)");
-    }
-    
-    #[test]
-    fn test_preserve_ws() {
-        let sql = "select\n* /* foo */  from bar ";
-        let mut formatter = formatter::FormatOption::default();
-        formatter.strip_whitespace = true;
-        let formatted_sql = format(sql, &mut formatter);
-        assert_eq!(formatted_sql, "select * /* foo */ from bar");
-    }
-
     #[test]
     fn test_reindent_keywords() {
         let sql = "select * from foo union select * from bar;";

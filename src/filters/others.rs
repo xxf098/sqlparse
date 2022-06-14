@@ -202,7 +202,7 @@ impl StripBeforeNewline {
             if token.is_group() {
                 self.process_internal(&mut token.children.tokens, level+1);
             }
-            if is_before_white && token.value.starts_with("\n") && i > 0 {
+            if is_before_white && (token.value.starts_with("\n") || token.value.starts_with("\r")) && i > 0 {
                 remove_indexes.push(i-1);
             }
             is_before_white = if token.is_group() {
