@@ -79,4 +79,4 @@ UPDATE employees
  WHERE employeeNumber = 1056;
 ```
 
-see more on ./examples folder
+see more on `examples` folder

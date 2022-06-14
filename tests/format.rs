@@ -7,6 +7,24 @@ fn test_strip_comments_single() {
     formatter.strip_comments = true;
     let formatted_sql = format(sql, &mut formatter);
     assert_eq!(formatted_sql, "select *\nfrom foo");
+    let sql = "select * -- statement starts here\nfrom foo";
+    let formatted_sql = format(sql, &mut formatter);
+    assert_eq!(formatted_sql, "select *\nfrom foo");
+    let sql = "select-- foo\nfrom -- bar\nwhere";
+    let formatted_sql = format(sql, &mut formatter);
+    assert_eq!(formatted_sql, "select\nfrom\nwhere");
+    let sql = "select *-- statement starts here\n\nfrom foo";
+    let formatted_sql = format(sql, &mut formatter);
+    assert_eq!(formatted_sql, "select *\nfrom foo");
+    let sql = "select * from foo-- statement starts here\nwhere";
+    let formatted_sql = format(sql, &mut formatter);
+    assert_eq!(formatted_sql, "select * from foo\nwhere");
+    let sql = "select a-- statement starts here\nfrom foo";
+    let formatted_sql = format(sql, &mut formatter);
+    assert_eq!(formatted_sql, "select a\nfrom foo");
+    let sql = "--comment\nselect a-- statement starts here\nfrom foo--comment\nf";
+    let formatted_sql = format(sql, &mut formatter);
+    assert_eq!(formatted_sql, "select a\nfrom foo\nf");
 }
 
 #[test]
