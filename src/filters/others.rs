@@ -1,13 +1,66 @@
+use regex::Regex;
 use super::{StmtFilter, TokenListFilter};
 use crate::lexer::{Token, TokenList};
 use crate::tokens::{TokenType};
 
-pub struct StripCommentsFilter { }
+pub struct StripCommentsFilter {
+    newline_reg: Regex,
+}
 
-impl StmtFilter for StripCommentsFilter {
+impl Default for StripCommentsFilter {
+    fn default() -> Self {
+        Self { newline_reg: Regex::new(r"((\r|\n)+) *$").unwrap() }
+    }
+}
 
-    fn process(&self, _tokens: &mut Vec<Token>) {
-     
+impl StripCommentsFilter {
+
+    fn get_next_comment(&self, token_list: &mut TokenList, start: usize) -> Option<usize> {
+        let ttypes = vec![TokenType::CommentSingle, TokenType::CommentMultiline];
+        token_list.token_next_by(&ttypes, None, start)
+    }
+
+    fn get_insert_token(&self, token: &Token) -> Token {
+        let caps = self.newline_reg.captures(&token.value);
+        if let Some(caps) = caps {
+            if let Some(cap) = caps.get(1).map(|c| c.as_str()) {
+                return Token::new(TokenType::Newline, cap)
+            } 
+        }
+        Token::new(TokenType::Whitespace, " ")
+    }
+
+    fn process_internal(&self, token_list: &mut TokenList) {
+        let mut tidx = self.get_next_comment(token_list, 0);
+        while let Some(idx) = tidx {
+            let token = token_list.token_idx(Some(idx)).unwrap();
+            let pidx = token_list.token_prev(idx, false);
+            let ptoken = token_list.token_idx(pidx);
+            let nidx = token_list.token_next(idx, false);
+            let ntoken = token_list.token_idx(nidx);
+            let insert_token = self.get_insert_token(token);
+            if ptoken.is_none() || ntoken.is_none() ||
+                 ptoken.map(|p| p.is_whitespace()).unwrap_or(false) || ptoken.map(|p| p.typ == TokenType::Punctuation && p.value == "(").unwrap_or(false) ||
+                 ntoken.map(|p| p.is_whitespace()).unwrap_or(false) || ntoken.map(|p| p.typ == TokenType::Punctuation && p.value == ")").unwrap_or(false)  {
+                    if ptoken.is_some() && !ptoken.map(|p| p.typ == TokenType::Punctuation && p.value == "(").unwrap() {
+                        token_list.insert_after(idx, insert_token, false)
+                    }
+                    token_list.tokens.remove(idx);
+            } else {
+                token_list.tokens[idx] = insert_token;
+            }
+            tidx = self.get_next_comment(token_list, idx + 1);
+        }
+    }
+}
+
+impl TokenListFilter for StripCommentsFilter {
+
+    fn process(&mut self, token_list: &mut TokenList) {
+        for token in token_list.tokens.iter_mut() {
+            if token.is_group() { self.process_internal(&mut token.children); }
+        }
+        self.process_internal(token_list)
     }
 }
 
@@ -162,3 +215,24 @@ impl StmtFilter for StripBeforeNewline {
     }
 
 } 
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_get_insert_token() {
+        let filter = StripCommentsFilter::default();
+        let token = Token::new(TokenType::CommentSingle, "-- comment \n\n ");
+        let t = filter.get_insert_token(&token);
+        assert_eq!(t.typ, TokenType::Newline);
+        assert_eq!(t.value, "\n\n");
+
+        let token = Token::new(TokenType::CommentSingle, "-- comment ");
+        let t = filter.get_insert_token(&token);
+        assert_eq!(t.typ, TokenType::Whitespace);
+        assert_eq!(t.value, " ");
+
+    }
+}

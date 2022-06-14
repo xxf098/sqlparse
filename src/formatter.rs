@@ -81,8 +81,8 @@ pub fn build_filter_stack(stack: &mut FilterStack, options: &mut FormatOption) {
     }
     if options.strip_comments {
         options.grouping = true;
-        let filter = Box::new(StripCommentsFilter{}) as Box<dyn StmtFilter>;
-        stack.stmtprocess.push(filter);
+        let filter = Box::new(StripCommentsFilter::default()) as Box<dyn TokenListFilter>;
+        stack.tlistprocess.push(filter);
     }
     if options.strip_whitespace || options.reindent {
         options.grouping = true;
