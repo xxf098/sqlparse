@@ -61,7 +61,7 @@ impl TokenListFilter for StripCommentsFilter {
 
     fn process(&mut self, token_list: &mut TokenList) {
         for token in token_list.tokens.iter_mut() {
-            if token.is_group() { 
+            if token.is_group() && token.typ != TokenType::Comment {
                 self.process(&mut token.children); 
                 token.update_value();
             }

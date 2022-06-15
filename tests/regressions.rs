@@ -48,6 +48,18 @@ fn test_reg35() {
 }
 
 #[test]
+fn test_reg38() {
+    let sql = "SELECT foo; -- comment";
+    let mut formatter = FormatOption::default();
+    formatter.strip_comments = true;
+    let formatted_sql = format(sql, &mut formatter);
+    assert_eq!(formatted_sql.trim(), "SELECT foo;");
+    let sql = "/* foo */";
+    let formatted_sql = format(sql, &mut formatter);
+    assert_eq!(formatted_sql, "");
+}
+
+#[test]
 fn test_reg39() {
     let sql = "select user.id from user";
     let token_list = group_tokenlist(sql);
@@ -212,7 +224,25 @@ fn test_reg322_concurrently_is_keyword() {
     assert_eq!(token_list.tokens[6].value, "myindex");
 }
 
-// TODO: test_issue484_comments_and_newlines
+// FIXME: test_reg484_comments_and_newlines
+#[test]
+fn test_reg484_comments_and_newlines() {
+    let sql = r#"Create table myTable
+(
+    myId TINYINT NOT NULL, --my special comment
+    myName VARCHAR2(100) NOT NULL
+)"#;
+    let mut formatter = FormatOption::default();
+    formatter.strip_comments = true;
+    let formatted_sql = format(sql, &mut formatter);
+    assert_eq!(formatted_sql, vec![
+        "Create table myTable",
+        "(",
+        "    myId TINYINT NOT NULL, ",
+        "myName VARCHAR2(100) NOT NULL",
+        ")"
+        ].join("\n"))
+}
 
 // FIXME: test_reg489_tzcasts
 
