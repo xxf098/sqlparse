@@ -176,6 +176,10 @@ fn test_single_line_comments() {
     let token_list = group_tokenlist(sql);
     assert_eq!(token_list.len(), 5);
     assert_eq!(token_list.tokens[4].typ, TokenType::CommentSingle);
+    let sql = "select 1 # foo";
+    let token_list = group_tokenlist(sql);
+    assert_eq!(token_list.len(), 5);
+    assert_eq!(token_list.tokens[4].typ, TokenType::CommentSingle);
 }
 
 #[test]

@@ -118,3 +118,34 @@ END;";
     let stmts = parse_multi(sql);
     assert_eq!(stmts.len(), 1);
 }
+
+
+#[test]
+fn test_split_dropif() {
+    let sql = "DROP TABLE IF EXISTS FOO;\n\nSELECT * FROM BAR;";
+    let stmts = parse_multi(sql);
+    assert_eq!(stmts.len(), 2);
+    let sql1 = stmts.iter().map(|t| to_string(t)).collect::<Vec<_>>().join("");
+    assert_eq!(sql, sql1);
+}
+
+#[test]
+fn test_split_comment_with_umlaut() {
+    let sql = "select * from foo;\n-- Testing an umlaut: ä\nselect * from bar;";
+    let stmts = parse_multi(sql);
+    assert_eq!(stmts.len(), 2);
+    let sql1 = stmts.iter().map(|t| to_string(t)).collect::<Vec<_>>().join("");
+    assert_eq!(sql, sql1);
+}
+
+#[test]
+fn test_split_comment_end_of_line() {
+    let sql = "select * from foo; -- foo\nselect * from bar;";
+    let stmts = parse_multi(sql);
+    assert_eq!(stmts.len(), 2);
+    let sql1 = stmts.iter().map(|t| to_string(t)).collect::<Vec<_>>().join("");
+    assert_eq!(sql, sql1);
+    let sql1 = stmts.iter().map(|t| to_string(t)).collect::<Vec<_>>();
+    assert_eq!(sql1[0], "select * from foo; -- foo\n");
+    // FIXME: 
+}

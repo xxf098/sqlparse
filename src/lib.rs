@@ -66,12 +66,22 @@ impl Parser {
         Self { stack: engine::FilterStack::new() }
     }
 
+    /// parse single sql statement
     pub fn parse(&self, sql: &str) -> Vec<Token> {
         self.stack.run(sql, true)
     }
 
+    /// parse multiple sql statements
+    pub fn parse_multi(&mut self, sql: &str) -> Vec<Vec<Token>> {
+        self.stack.run_multi(sql, true)
+    }
+
     pub fn parse_no_grouping(&self, sql: &str) -> Vec<Token> {
         self.stack.run(sql, false)
+    }
+
+    pub fn parse_multi_no_grouping(&mut self, sql: &str) -> Vec<Vec<Token>> {
+        self.stack.run_multi(sql, false)
     }
 }
 
@@ -85,10 +95,8 @@ pub fn parse(sql: &str) -> Vec<Token> {
 /// parse multiple sqls into tokens,
 /// only for test
 pub fn parse_multi(sql: &str) -> Vec<Vec<Token>> {
-    let stack = engine::FilterStack::new();
-    let tokens = stack.run(sql, true);
-    let mut splitter = engine::StatementSplitter::default();
-    splitter.process(tokens)
+    let mut stack = engine::FilterStack::new();
+    stack.run_multi(sql, true)
 }
 
 /// parse sql into grouped tokens,
@@ -188,271 +196,6 @@ mod tests {
         let _tokens = p.parse(sql);
         let elapsed = now.elapsed();
         println!("elapsed: {}ms", elapsed.as_millis());
-    }
-
-    #[test]
-    fn test_format() {
-        let sql = "select * from users limit 10";
-        let mut formatter = formatter::FormatOption::default();
-        formatter.keyword_case = "upper";
-        formatter.identifier_case = "upper";
-        let formatted_sql = format(sql, &mut formatter);
-        assert_eq!(formatted_sql, "SELECT * FROM USERS LIMIT 10");
-        let sql = "select * from \"t\".\"users\" limit 10";
-        let formatted_sql = format(sql, &mut formatter);
-        assert_eq!(formatted_sql, "SELECT * FROM \"t\".\"users\" LIMIT 10");
-    }
-
-    #[test]
-    fn test_strip_ws() {
-        let sql = "select     * from  users where  id  = 1;";
-        let mut formatter = formatter::FormatOption::default();
-        formatter.strip_whitespace = true;
-        let formatted_sql = format(sql, &mut formatter);
-        assert_eq!(formatted_sql, "select * from users where id = 1;");
-    }
-
-    #[test]
-    fn test_reindent_keywords() {
-        let sql = "select * from foo union select * from bar;";
-        let mut formatter = formatter::FormatOption::default_reindent();
-        let formatted_sql = format(sql, &mut formatter);
-        assert_eq!(formatted_sql, vec![
-            "select *", 
-            "from foo", 
-            "union", 
-            "select *", 
-            "from bar;"].join("\n"))
-    }
-
-    #[test]
-    fn test_reindent_keywords_between() {
-        let sql = "and foo between 1 and 2 and bar = 3";
-        let mut formatter = formatter::FormatOption::default_reindent();
-        let formatted_sql = format(sql, &mut formatter);
-        assert_eq!(formatted_sql, vec![
-            "and foo between 1 and 2",
-            "and bar = 3",
-        ].join("\n"))
-    }
-
-    #[test]
-    fn test_reindent_where() {
-        let sql = "select * from foo where bar = 1 and baz = 2 or bzz = 3;";
-        let mut formatter = formatter::FormatOption::default_reindent();
-        let formatted_sql = format(sql, &mut formatter);
-        // println!("{}", formatted_sql);
-        assert_eq!(formatted_sql, vec![
-            "select *",
-            "from foo",
-            "where bar = 1",
-            "  and baz = 2",
-            "  or bzz = 3;",
-        ].join("\n"))
-    }
-
-    #[test]
-    fn test_reindent_parenthesis() {
-        let sql = "select count(*) from (select * from foo);";
-        let mut formatter = formatter::FormatOption::default_reindent();
-        let formatted_sql = format(sql, &mut formatter);
-        // println!("{}", formatted_sql);
-        assert_eq!(formatted_sql, vec![
-            "select count(*)",
-            "from",
-            "  (select *",
-            "   from foo);",
-        ].join("\n"))
-    }
-
-    #[test]
-    fn test_reindent_join() {
-        let sql = "select * from foo join bar on 1 = 2";
-        let mut formatter = formatter::FormatOption::default_reindent();
-        let formatted_sql = format(sql, &mut formatter);
-        assert_eq!(formatted_sql, vec![
-            "select *",
-            "from foo",
-            "join bar on 1 = 2",
-        ].join("\n"));
-        let sql = "select * from foo inner join bar on 1 = 2";
-        let formatted_sql = format(sql, &mut formatter);
-        assert_eq!(formatted_sql, vec![
-            "select *",
-            "from foo",
-            "inner join bar on 1 = 2",
-        ].join("\n"));
-        let sql = "select * from foo left outer join bar on 1 = 2";
-        let formatted_sql = format(sql, &mut formatter);
-        assert_eq!(formatted_sql, vec![
-            "select *",
-            "from foo",
-            "left outer join bar on 1 = 2",
-        ].join("\n"));
-        let sql = "select * from foo straight_join bar on 1 = 2";
-        let formatted_sql = format(sql, &mut formatter);
-        assert_eq!(formatted_sql, vec![
-            "select *",
-            "from foo",
-            "straight_join bar on 1 = 2",
-        ].join("\n"));
-    }
-
-    #[test]
-    fn test_reindent_insert_values() {
-        let sql = "insert into foo values (1, 2)";
-        let mut formatter = formatter::FormatOption::default_reindent();
-        let formatted_sql = format(sql, &mut formatter);
-        assert_eq!(formatted_sql, vec![
-            "insert into foo",
-            "values (1, 2)",
-        ].join("\n"));
-
-        let sql = "insert into foo values (1, 2), (3, 4), (5, 6)";
-        let formatted_sql = format(sql, &mut formatter);
-        assert_eq!(formatted_sql, vec![
-            "insert into foo",
-            "values (1, 2),",
-            "       (3, 4),",
-            "       (5, 6)",
-        ].join("\n"));
-
-        let sql = "insert into foo(a, b) values (1, 2), (3, 4), (5, 6)";
-        let mut formatter = formatter::FormatOption::default_reindent();
-        let formatted_sql = format(sql, &mut formatter);
-        assert_eq!(formatted_sql, vec![
-            "insert into foo(a, b)",
-            "values (1, 2),",
-            "       (3, 4),",
-            "       (5, 6)",
-        ].join("\n"));
-
-    }
-
-    #[test]
-    fn test_reindent_insert_values_comma_first() {
-        let sql = "insert into foo values (1, 2)";
-        let mut formatter = formatter::FormatOption::default_reindent();
-        formatter.comma_first = true;
-        let formatted_sql = format(sql, &mut formatter);
-        assert_eq!(formatted_sql, vec![
-            "insert into foo",
-            "values (1, 2)",
-        ].join("\n"));
-
-        let sql = "insert into foo values (1, 2), (3, 4), (5, 6)";
-        let formatted_sql = format(sql, &mut formatter);
-        assert_eq!(formatted_sql, vec![
-            "insert into foo",
-            "values (1, 2)",
-            "     , (3, 4)",
-            "     , (5, 6)",
-        ].join("\n"));
-
-        let sql = "insert into foo(a, b) values (1, 2), (3, 4), (5, 6)";
-        let formatted_sql = format(sql, &mut formatter);
-        assert_eq!(formatted_sql, vec![
-            "insert into foo(a, b)",
-            "values (1, 2)",
-            "     , (3, 4)",
-            "     , (5, 6)",
-        ].join("\n"));
-    }
-
-    #[test]
-    fn test_reindent_case() {
-        let sql = "case when foo = 1 then 2 when foo = 3 then 4 else 5 end";
-        let mut formatter = formatter::FormatOption::default_reindent();
-        let formatted_sql = format(sql, &mut formatter);
-        assert_eq!(formatted_sql, vec![
-            "case",
-            "    when foo = 1 then 2",
-            "    when foo = 3 then 4",
-            "    else 5",
-            "end"
-        ].join("\n"));
-    }
-
-    #[test]
-    fn test_reindent_case2() {
-        let sql = "case(foo) when bar = 1 then 2 else 3 end";
-        let mut formatter = formatter::FormatOption::default_reindent();
-        let formatted_sql = format(sql, &mut formatter);
-        assert_eq!(formatted_sql, vec![
-            "case(foo)",
-            "    when bar = 1 then 2",
-            "    else 3",
-            "end"
-        ].join("\n"));
-
-    }
-
-    #[test]
-    fn test_reindent_identifier_list() {
-        let sql = "select foo, bar, baz from table1, table2 where 1 = 2";
-        let mut formatter = formatter::FormatOption::default_reindent();
-        let formatted_sql = format(sql, &mut formatter);
-        assert_eq!(formatted_sql, vec![
-            "select foo,",
-            "       bar,",
-            "       baz",
-            "from table1,",
-            "     table2",
-            "where 1 = 2"
-        ].join("\n"));
-        let sql = "select a.*, b.id from a, b";
-        let formatted_sql = format(sql, &mut formatter);
-        assert_eq!(formatted_sql, vec![
-            "select a.*,",
-            "       b.id",
-            "from a,",
-            "     b"
-        ].join("\n"));
-    }
-
-    #[test]
-    fn test_reindent_identifier_list_with_wrap_after() {
-        let sql = "select foo, bar, baz from table1, table2 where 1 = 2";
-        let mut formatter = formatter::FormatOption::default_reindent();
-        formatter.wrap_after = 14;
-        let formatted_sql = format(sql, &mut formatter);
-        assert_eq!(formatted_sql, vec![
-            "select foo, bar,",
-            "       baz",
-            "from table1, table2",
-            "where 1 = 2"
-        ].join("\n"));
-    }
-
-    #[test]
-    fn test_reindent_identifier_list_comment_first() {
-        let sql = "select foo, bar, baz from table where foo in (1, 2,3)";
-        let mut formatter = formatter::FormatOption::default_reindent();
-        formatter.comma_first = true;
-        let formatted_sql = format(sql, &mut formatter);
-        // println!("{}", formatted_sql);
-        assert_eq!(formatted_sql, vec![
-            "select foo",
-            "     , bar",
-            "     , baz",
-            "from table",
-            "where foo in (1",
-            "            , 2",
-            "            , 3)"
-        ].join("\n"));
-    }
-
-    #[test]
-    fn test_reindent_identifier_list_with_functions() {
-        let sql = "select 'abc' as foo, coalesce(col1, col2)||col3 as bar, col3 from my_table";
-        let mut formatter = formatter::FormatOption::default_reindent();
-        let formatted_sql = format(sql, &mut formatter);
-        assert_eq!(formatted_sql, vec![
-            "select 'abc' as foo,",
-            "       coalesce(col1, col2)||col3 as bar,",
-            "       col3",
-            "from my_table"
-        ].join("\n"));
     }
 
 }
