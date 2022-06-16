@@ -8,26 +8,35 @@ use super::filters::{
 /// sql format options
 #[derive(Default)]
 pub struct FormatOption<'a> {
-    /// upper, lower
+    /// Changes how keywords are formatted. Allowed values are "upper", "lower".
     pub keyword_case: &'a str,
-    /// upper, lower
+    /// Changes how identifiers are formatted. Allowed values are "upper", "lower".
     pub identifier_case: &'a str,
     pub output_format: &'a str,
+    /// If True comments are removed from the statements.
     pub strip_comments: bool,
+    /// If True spaces are used around all operators.
     pub use_space_around_operators: bool,
+    /// if True extra spaces are removed.
     pub strip_whitespace: bool,
-    // reindent
+    /// If True the indentations of the statements are changed.
     pub reindent: bool,
     pub indent_columns: bool,
+    /// If True the indentations of the statements are changed, and statements are aligned by keywords.
     pub reindent_aligned: bool,
     pub indent_after_first: bool,
+    /// If True tabs instead of spaces are used for indentation.
     pub indent_tabs: bool,
+    /// The width of the indentation, defaults to 2.
     pub indent_width: usize,
+    /// set indent char, defaults to 1 whitespace.
     pub indent_char: &'a str,
+    /// The column limit (in characters) for wrapping comma-separated lists. If unspecified, it puts every item in the list on its own line.
     pub wrap_after: usize,
+    /// If True comma-first notation for column names is used.
     pub comma_first: bool,
     pub right_margin: usize,
-    pub grouping: bool,
+    pub(crate) grouping: bool,
 }
 
 impl<'a> FormatOption<'a> {
