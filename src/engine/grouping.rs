@@ -52,6 +52,7 @@ impl std::fmt::Display for TokenList {
 // TODO: GroupToken
 impl TokenList {
 
+    /// Create a new TokenList
     pub fn new(tokens: Vec<Token>) -> Self {
         // let group_tokens = tokens.into_iter().map(|t| t.into()).collect();
         Self { tokens: tokens }

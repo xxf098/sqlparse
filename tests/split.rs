@@ -147,5 +147,5 @@ fn test_split_comment_end_of_line() {
     assert_eq!(sql, sql1);
     let sql1 = stmts.iter().map(|t| to_string(t)).collect::<Vec<_>>();
     assert_eq!(sql1[0], "select * from foo; -- foo\n");
-    // FIXME: 
 }
+
