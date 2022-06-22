@@ -494,7 +494,7 @@ impl TokenList {
 
         fn valid_next(token: Option<&Token>) -> bool {
             let ttypes = vec![TokenType::DML, TokenType::DDL, TokenType::CTE];
-            !Token::imt(token, &ttypes, None)
+            !Token::imt(token, &ttypes, None) && token.is_some()
         }
 
         fn post(_tlist: &mut TokenList, pidx: usize, _tidx: usize, nidx: usize) -> (usize, usize) {

@@ -209,3 +209,10 @@ fn test_parse_wildcard_multiplication() {
     let token_list = &token_list.tokens[2].children;
     assert_eq!(token_list.tokens[2].typ, TokenType::Operator);
 }
+
+#[test]
+fn test_parse_as() {
+    let sql = "select 1 as ";
+    let token_list = group_tokenlist(sql);
+    assert_eq!(token_list.len(), 6);
+}
