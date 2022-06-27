@@ -8,20 +8,20 @@ const EOS_TTYPE: [TokenType; 2] = [TokenType::Whitespace, TokenType::CommentSing
 pub struct StatementSplitter {
     in_declare: Cell<bool>,
     is_create: Cell<bool>,
-    consume_ws: bool,
+    consume_ws: Cell<bool>,
     begin_depth: Cell<usize>,
-    level: isize,
+    level: Cell<isize>,
     // tokens: Vec<Token>
 }
 
 impl StatementSplitter {
 
-    fn reset(&mut self) {
-        self.in_declare = Cell::new(false);
-        self.is_create = Cell::new(false);
-        self.consume_ws = false;
-        self.begin_depth = Cell::new(0);
-        self.level = 0;
+    fn reset(&self) {
+        self.in_declare.set(false);
+        self.is_create.set(false);
+        self.consume_ws.set(false);
+        self.begin_depth.set(0);
+        self.level.set(0);
         // self.tokens = vec![];
     }
 
@@ -76,19 +76,20 @@ impl StatementSplitter {
         0
     }
 
-    pub fn process(&mut self, tokens: Vec<Token>) -> Vec<Vec<Token>> {
+    pub fn process(&self, tokens: Vec<Token>) -> Vec<Vec<Token>> {
         let mut stmts = vec![];
         let mut tmp_tokens = vec![];
         for token in tokens.into_iter() {
-            if self.consume_ws && !EOS_TTYPE.contains(&token.typ) {
+            if self.consume_ws.get() && !EOS_TTYPE.contains(&token.typ) {
                 let stmt_tokens = std::mem::replace(&mut tmp_tokens, vec![]);
                 stmts.push(stmt_tokens);
                 self.reset();
             }
 
-            self.level += self.change_splitlevel(&token);
-            if self.level <= 0 && token.typ == TokenType::Punctuation && token.value == ";"  {
-                self.consume_ws = true
+            let level = self.level.get() + self.change_splitlevel(&token);
+            self.level.set(level);
+            if self.level.get() <= 0 && token.typ == TokenType::Punctuation && token.value == ";"  {
+                self.consume_ws.set(true)
             }
             tmp_tokens.push(token);
         }
@@ -109,7 +110,7 @@ mod tests {
     fn test_parse_splitter() {
         let sql = "select 'one'; select 'two'; select 'two';";
         let tokens = parse_no_grouping(sql);
-        let mut splitter = StatementSplitter::default();
+        let splitter = StatementSplitter::default();
         let stmts = splitter.process(tokens);
         assert_eq!(stmts.len(), 3);
     }
@@ -123,7 +124,7 @@ mod tests {
         END;
         SELECT * FROM a.b;"#;
         let tokens = parse_no_grouping(sql);
-        let mut splitter = StatementSplitter::default();
+        let splitter = StatementSplitter::default();
         let stmts = splitter.process(tokens);
         assert_eq!(stmts.len(), 2);
     }
@@ -140,7 +141,7 @@ mod tests {
         END;
         SELECT * FROM a.b;"#;
         let tokens = parse_no_grouping(sql);
-        let mut splitter = StatementSplitter::default();
+        let splitter = StatementSplitter::default();
         let stmts = splitter.process(tokens);
         assert_eq!(stmts.len(), 2);
     }
@@ -154,7 +155,7 @@ select 1;
 select 2;
 );"#;
         let tokens = parse_no_grouping(sql);
-        let mut splitter = StatementSplitter::default();
+        let splitter = StatementSplitter::default();
         let stmts = splitter.process(tokens);
         assert_eq!(stmts.len(), 1);
     }
@@ -163,7 +164,7 @@ select 2;
     fn test_parse_splitting_at_and_backticks() {
         let sql = "grant foo to user1@`myhost`; grant bar to user1@`myhost`;";
         let tokens = parse_no_grouping(sql);
-        let mut splitter = StatementSplitter::default();
+        let splitter = StatementSplitter::default();
         let stmts = splitter.process(tokens);
         assert_eq!(stmts.len(), 2);
     }
