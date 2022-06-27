@@ -72,7 +72,7 @@ impl Parser {
     }
 
     /// parse multiple sql statements
-    pub fn parse_multi(&mut self, sql: &str) -> Vec<Vec<Token>> {
+    pub fn parse_multi(&self, sql: &str) -> Vec<Vec<Token>> {
         self.stack.run_multi(sql, true)
     }
 
@@ -80,7 +80,7 @@ impl Parser {
         self.stack.run(sql, false)
     }
 
-    pub fn parse_multi_no_grouping(&mut self, sql: &str) -> Vec<Vec<Token>> {
+    pub fn parse_multi_no_grouping(&self, sql: &str) -> Vec<Vec<Token>> {
         self.stack.run_multi(sql, false)
     }
 }
@@ -95,7 +95,7 @@ pub fn parse(sql: &str) -> Vec<Token> {
 /// parse multiple sqls into tokens,
 /// only for test
 pub fn parse_multi(sql: &str) -> Vec<Vec<Token>> {
-    let mut stack = engine::FilterStack::new();
+    let stack = engine::FilterStack::new();
     stack.run_multi(sql, true)
 }
 

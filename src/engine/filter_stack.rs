@@ -39,7 +39,7 @@ impl FilterStack {
         tokens
     }
 
-    pub fn run_multi(&mut self, sql: &str, grouping: bool) -> Vec<Vec<Token>> {
+    pub fn run_multi(&self, sql: &str, grouping: bool) -> Vec<Vec<Token>> {
         let tokens = tokenize_internal(sql, &self.regs, &self.trie);
         let stmts = self.spliter.process(tokens);
         stmts.into_iter().map(|tokens| if grouping { super::grouping::group(tokens) } else { tokens }).collect()
