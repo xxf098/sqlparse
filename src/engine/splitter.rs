@@ -10,7 +10,7 @@ pub struct StatementSplitter {
     consume_ws: bool,
     begin_depth: usize,
     level: isize,
-    tokens: Vec<Token>
+    // tokens: Vec<Token>
 }
 
 impl StatementSplitter {
@@ -21,7 +21,7 @@ impl StatementSplitter {
         self.consume_ws = false;
         self.begin_depth = 0;
         self.level = 0;
-        self.tokens = vec![];
+        // self.tokens = vec![];
     }
 
     fn change_splitlevel(&mut self, token: &Token) -> isize {
@@ -65,9 +65,10 @@ impl StatementSplitter {
 
     pub fn process(&mut self, tokens: Vec<Token>) -> Vec<Vec<Token>> {
         let mut stmts = vec![];
+        let mut tmp_tokens = vec![];
         for token in tokens.into_iter() {
             if self.consume_ws && !EOS_TTYPE.contains(&token.typ) {
-                let stmt_tokens = std::mem::replace(&mut self.tokens, vec![]);
+                let stmt_tokens = std::mem::replace(&mut tmp_tokens, vec![]);
                 stmts.push(stmt_tokens);
                 self.reset();
             }
@@ -76,10 +77,10 @@ impl StatementSplitter {
             if self.level <= 0 && token.typ == TokenType::Punctuation && token.value == ";"  {
                 self.consume_ws = true
             }
-            self.tokens.push(token);
+            tmp_tokens.push(token);
         }
-        if self.tokens.len() > 0 && self.tokens.iter().find(|t| t.typ != TokenType::Whitespace).is_some() {
-            let stmt_tokens = std::mem::replace(&mut self.tokens, vec![]);
+        if tmp_tokens.len() > 0 && tmp_tokens.iter().find(|t| t.typ != TokenType::Whitespace).is_some() {
+            let stmt_tokens = std::mem::replace(&mut tmp_tokens, vec![]);
             stmts.push(stmt_tokens);
         }
         stmts
