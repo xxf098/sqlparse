@@ -1,3 +1,4 @@
+use std::cell::Cell;
 use crate::lexer::{Token};
 use crate::tokens::TokenType;
 
@@ -5,10 +6,10 @@ const EOS_TTYPE: [TokenType; 2] = [TokenType::Whitespace, TokenType::CommentSing
 
 #[derive(Default)]
 pub struct StatementSplitter {
-    in_declare: bool,
-    is_create: bool,
+    in_declare: Cell<bool>,
+    is_create: Cell<bool>,
     consume_ws: bool,
-    begin_depth: usize,
+    begin_depth: Cell<usize>,
     level: isize,
     // tokens: Vec<Token>
 }
@@ -16,15 +17,25 @@ pub struct StatementSplitter {
 impl StatementSplitter {
 
     fn reset(&mut self) {
-        self.in_declare = false;
-        self.is_create = false;
+        self.in_declare = Cell::new(false);
+        self.is_create = Cell::new(false);
         self.consume_ws = false;
-        self.begin_depth = 0;
+        self.begin_depth = Cell::new(0);
         self.level = 0;
         // self.tokens = vec![];
     }
 
-    fn change_splitlevel(&mut self, token: &Token) -> isize {
+    #[inline]
+    fn is_create(&self) -> bool {
+        self.is_create.get()
+    }
+
+    #[inline]
+    fn begin_depth(&self) -> usize {
+        self.begin_depth.get()
+    }
+
+    fn change_splitlevel(&self, token: &Token) -> isize {
         if token.typ == TokenType::Punctuation && token.value == "(" {
             return 1;
         } else if token.typ == TokenType::Punctuation && token.value == ")" {
@@ -35,26 +46,28 @@ impl StatementSplitter {
 
         let unified = token.value.to_uppercase();
         if token.typ == TokenType::KeywordDDL && unified.starts_with("CREATE") {
-            self.is_create = true;
+            self.is_create.set(true);
             return 0
         }
 
-        if unified == "DECLARE" && self.is_create && self.begin_depth == 0 {
-            self.in_declare = true;
+        if unified == "DECLARE" && self.is_create() && self.begin_depth() == 0 {
+            self.in_declare.set(true);
             return 1
         }
         if unified == "BEGIN" {
-            self.begin_depth += 1;
-            if self.is_create {
+            let begin_depth = self.begin_depth.get() + 1;
+            self.begin_depth.set(begin_depth);
+            if self.is_create() {
                 return 1
             }
             return 0
         }
         if unified == "END" {
-            self.begin_depth = if self.begin_depth > 1 { self.begin_depth -1 } else { 0 };
+            let begin_depth = if self.begin_depth() > 1 { self.begin_depth() -1 } else { 0 };
+            self.begin_depth.set(begin_depth);
             return -1
         }
-        if (unified == "IF" || unified == "FOR" || unified == "WHILE" || unified == "CASE") && self.is_create && self.begin_depth > 0 {
+        if (unified == "IF" || unified == "FOR" || unified == "WHILE" || unified == "CASE") && self.is_create() && self.begin_depth() > 0 {
             return 1
         }
         if unified == "END IF" || unified == "END FOR" || unified == "END WHILE" {
