@@ -120,10 +120,25 @@ impl Default for Formatter {
 
 impl Formatter {
 
+    pub fn new(stack: engine::FilterStack) -> Self {
+        Self { stack }
+    }
+
+    /// do not use this function repeatly
     pub fn format(&mut self, mut sql: &str, options: &mut formatter::FormatOption) -> String {
         formatter::validate_options(options);
         formatter::build_filter_stack(&mut self.stack, options);
         if options.strip_whitespace { sql = sql.trim(); };
+        let tokens = self.stack.format(sql, options.grouping);
+        tokens.iter().map(|token| token.iter().map(|t| t.value.as_str()).collect::<String>()).collect::<Vec<_>>().join("\n")
+    }
+
+    pub fn build_filters(&mut self, options: &mut formatter::FormatOption) {
+        formatter::validate_options(options);
+        formatter::build_filter_stack(&mut self.stack, options);
+    }
+
+    pub fn format_sql(&mut self, sql: &str, options: &formatter::FormatOption) -> String {
         let tokens = self.stack.format(sql, options.grouping);
         tokens.iter().map(|token| token.iter().map(|t| t.value.as_str()).collect::<String>()).collect::<Vec<_>>().join("\n")
     }
