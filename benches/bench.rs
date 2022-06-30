@@ -29,7 +29,7 @@ fn complex_query(c: &mut Criterion) {
 
 
 fn multiple_statements_query(c: &mut Criterion) {
-    const SIZE: usize = 1000;
+    const SIZE: usize = 200;
 
     pub struct UserData {
         pub id: i64,
