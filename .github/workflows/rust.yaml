@@ -38,6 +38,9 @@ jobs:
       - name: cargo build (debug; default features)
         run: cargo build
 
+      - name: cargo build (debug; default features)
+        run: cargo bench
+
       - name: cargo test (debug; all features)
         run: cargo test
         env:
