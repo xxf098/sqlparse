@@ -55,7 +55,7 @@ impl AlignedIndentFilter {
             tidx = next_token_align(token_list, idx+forward)
         }
         // remove the last space
-        if token_list.tokens[token_list.len()-1].is_whitespace() {
+        if token_list.token_idx(Some(token_list.len().saturating_sub(1))).map(|t| t.is_whitespace()).unwrap_or(false) {
             token_list.tokens.remove(token_list.len()-1);
         }
     }
