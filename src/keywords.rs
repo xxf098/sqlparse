@@ -1,6 +1,6 @@
 // use std::collections::HashMap;
 use regex::{Regex};
-use super::{TokenType, trie::Trie};
+use super::{TokenType, trie::TokenTypeTrie};
 // use crate::sql::token::regex_factory::{ create_string_regex };
 
 pub struct RegexToken {
@@ -265,8 +265,8 @@ const KEYWORDS: [&str; 550] = [
     "ZONE",
 ];
 
-pub fn init_trie() -> Trie {
-    let mut t = Trie::default();
+pub fn init_trie() -> TokenTypeTrie {
+    let mut t = TokenTypeTrie::default();
     for keyword in KEYWORDS { t.insert_token(keyword, TokenType::Keyword) }
     for keyword in KEYWORDS_ORDER { t.insert_token(keyword, TokenType::KeywordOrder) }
     for keyword in KEYWORDS_DML { t.insert_token(keyword, TokenType::KeywordDML) }

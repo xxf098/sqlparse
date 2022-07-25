@@ -1,6 +1,6 @@
 use super::keywords::{sql_regex, is_keyword, init_trie, RegexToken};
 use super::tokens::TokenType;
-use super::trie::{Trie};
+use super::trie::{TokenTypeTrie};
 
 /// parsed sql token
 #[derive(Debug, Clone, PartialEq)]
@@ -145,7 +145,7 @@ pub fn tokenize(sql: &str) -> Vec<Token> {
     tokenize_internal(sql, &regs, &trie)
 }
 
-pub fn tokenize_internal(sql: &str, regs: &[RegexToken], trie: &Trie) -> Vec<Token> {
+pub fn tokenize_internal(sql: &str, regs: &[RegexToken], trie: &TokenTypeTrie) -> Vec<Token> {
     let mut tokens = vec![];
     let mut index = 0;
     let sql_len = sql.len();

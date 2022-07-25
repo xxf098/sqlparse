@@ -1,13 +1,13 @@
 use crate::lexer::{Token, TokenList, tokenize_internal};
 use crate::keywords::{RegexToken, sql_regex, init_trie};
 use crate::filters::{Filter, StmtFilter, TokenListFilter};
-use crate::trie::Trie;
+use crate::trie::TokenTypeTrie;
 use super::splitter::StatementSplitter;
 
 // 'a
 pub struct FilterStack {
     regs: Vec<RegexToken>,
-    trie: Trie,
+    trie: TokenTypeTrie,
     spliter: StatementSplitter,
     pub preprocess: Vec<Box<dyn Filter>>,
     pub stmtprocess: Vec<Box<dyn StmtFilter>>,

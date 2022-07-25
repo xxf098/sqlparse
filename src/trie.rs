@@ -1,13 +1,13 @@
 use std::collections::HashMap;
 use super::TokenType;
 
-struct TrieNode {
-    typ: Option<TokenType>,
+struct TrieNode<T> {
+    typ: Option<T>,
     is_last: bool,
-    children: HashMap<char, TrieNode>,
+    children: HashMap<char, TrieNode<T>>,
 }
 
-impl TrieNode {
+impl<T> TrieNode<T> {
 
     fn new() -> Self {
         Self {
@@ -19,18 +19,18 @@ impl TrieNode {
 }
 
 
-pub struct Trie {
-    root: TrieNode,
+pub struct Trie<T> {
+    root: TrieNode<T>,
 }
 
-impl Default for Trie {
+impl<T> Default for Trie<T> {
     fn default() -> Self {
         Self { root: TrieNode::new() }
     }
 }
 
 
-impl Trie {
+impl<T: Clone> Trie<T> {
 
     pub fn _insert(&mut self, key: &str) {
         let chars = key.chars();
@@ -44,7 +44,7 @@ impl Trie {
         current.is_last = true;
     }
 
-    pub fn insert_token(&mut self, key: &str, typ: TokenType) {
+    pub fn insert_token(&mut self, key: &str, typ: T) {
         let chars = key.chars();
         let mut current = &mut self.root;
         for c in chars {
@@ -88,6 +88,12 @@ impl Trie {
         }
         if current.is_last { Some(sql.len()) } else { None }
     }
+
+}
+
+pub type TokenTypeTrie = Trie<TokenType>;
+
+impl TokenTypeTrie {
 
     pub fn match_token(&self, sql: &str) -> Option<(usize, Option<TokenType>)> {
         let chars = sql.chars();
@@ -142,7 +148,7 @@ mod tests {
 
     #[test]
     fn test_trie() {
-        let mut t = Trie::default();
+        let mut t = Trie::<TokenType>::default();
         t._insert("the");
         t._insert("a");
         t._insert("there");
@@ -159,7 +165,7 @@ mod tests {
 
     #[test]
     fn test_match_keyword() {
-        let mut t = Trie::default();
+        let mut t = Trie::<TokenType>::default();
         t._insert("SELECT");
         t._insert("WHERE");
         t._insert("FROM");
@@ -194,7 +200,7 @@ mod tests {
 
     #[test]
     fn test_trie1() {
-        let mut t = Trie::default();
+        let mut t = Trie::<TokenType>::default();
         t._insert("apple");
         assert!(t._search("apple"));
         assert!(!t._search("app"));
