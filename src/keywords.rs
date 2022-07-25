@@ -267,11 +267,11 @@ const KEYWORDS: [&str; 550] = [
 
 pub fn init_trie() -> TokenTypeTrie {
     let mut t = TokenTypeTrie::default();
-    for keyword in KEYWORDS { t.insert_token(keyword, TokenType::Keyword) }
-    for keyword in KEYWORDS_ORDER { t.insert_token(keyword, TokenType::KeywordOrder) }
-    for keyword in KEYWORDS_DML { t.insert_token(keyword, TokenType::KeywordDML) }
-    for keyword in NAME_BUILTIN { t.insert_token(keyword, TokenType::NameBuiltin) }
-    for keyword in KEYWORDS_CTE { t.insert_token(keyword, TokenType::KeywordCTE) }
+    for keyword in KEYWORDS { t.insert(keyword, TokenType::Keyword) }
+    for keyword in KEYWORDS_ORDER { t.insert(keyword, TokenType::KeywordOrder) }
+    for keyword in KEYWORDS_DML { t.insert(keyword, TokenType::KeywordDML) }
+    for keyword in NAME_BUILTIN { t.insert(keyword, TokenType::NameBuiltin) }
+    for keyword in KEYWORDS_CTE { t.insert(keyword, TokenType::KeywordCTE) }
     t
 }
 

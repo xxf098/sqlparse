@@ -44,7 +44,7 @@ impl<T: Clone> Trie<T> {
         current.is_last = true;
     }
 
-    pub fn insert_token(&mut self, key: &str, typ: T) {
+    pub fn insert(&mut self, key: &str, typ: T) {
         let chars = key.chars();
         let mut current = &mut self.root;
         for c in chars {
@@ -58,7 +58,7 @@ impl<T: Clone> Trie<T> {
     }
 
 
-    pub fn _search(&self, key: &str) -> bool {
+    pub fn search(&self, key: &str) -> bool {
         let chars = key.chars();
         let mut current = &self.root;
         for c in chars {
@@ -68,6 +68,18 @@ impl<T: Clone> Trie<T> {
             current = current.children.get(&c).unwrap();
         }
         current.is_last
+    }
+
+    pub fn find(&self, key: &str) -> Option<T> {
+        let chars = key.chars();
+        let mut current = &self.root;
+        for c in chars {
+            if !current.children.contains_key(&c) {
+                return None
+            }
+            current = current.children.get(&c).unwrap();
+        }
+        if current.is_last { current.typ.clone() } else { None }
     }
 
     // match a-z 0-9
@@ -157,10 +169,10 @@ mod tests {
         t._insert("bye");
         t._insert("by");
         t._insert("their");
-        assert!(t._search("the"));
-        assert!(!t._search("these"));
-        assert!(t._search("there"));
-        assert!(!t._search("thaw"));
+        assert!(t.search("the"));
+        assert!(!t.search("these"));
+        assert!(t.search("there"));
+        assert!(!t.search("thaw"));
     }
 
     #[test]
@@ -181,13 +193,13 @@ mod tests {
     #[test]
     fn test_match_token() {
         let mut t = Trie::default();
-        t.insert_token("SELECT", TokenType::KeywordDML);
-        t.insert_token("WHERE", TokenType::Keyword);
-        t.insert_token("FROM", TokenType::Keyword);
-        t.insert_token("ON", TokenType::Keyword);
-        t.insert_token("IN", TokenType::Keyword);
-        t.insert_token("CASE", TokenType::Keyword);
-        t.insert_token("WHEN", TokenType::Keyword);
+        t.insert("SELECT", TokenType::KeywordDML);
+        t.insert("WHERE", TokenType::Keyword);
+        t.insert("FROM", TokenType::Keyword);
+        t.insert("ON", TokenType::Keyword);
+        t.insert("IN", TokenType::Keyword);
+        t.insert("CASE", TokenType::Keyword);
+        t.insert("WHEN", TokenType::Keyword);
         let sql = "SELECT * FROM foo.bar";
         let (pos, typ) = t.match_token(sql).unwrap();
         assert_eq!(&sql[0..pos], "SELECT");
@@ -202,10 +214,10 @@ mod tests {
     fn test_trie1() {
         let mut t = Trie::<TokenType>::default();
         t._insert("apple");
-        assert!(t._search("apple"));
-        assert!(!t._search("app"));
+        assert!(t.search("apple"));
+        assert!(!t.search("app"));
         t._insert("app");
-        assert!(t._search("app"));
+        assert!(t.search("app"));
     }
 
 

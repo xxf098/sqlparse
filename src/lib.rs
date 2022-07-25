@@ -47,6 +47,7 @@ pub use tokens::TokenType;
 pub use lexer::{Token, TokenList};
 pub use formatter::{FormatOption};
 pub use engine::grouping::group_tokenlist;
+pub use trie::Trie;
 
 /// parse sql
 pub struct Parser {
