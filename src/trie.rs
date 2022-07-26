@@ -63,7 +63,7 @@ impl<T: Clone> Trie<T> {
         let mut current = &self.root;
         for c in chars {
             if !current.children.contains_key(&c) {
-                return false
+                break;
             }
             current = current.children.get(&c).unwrap();
         }
@@ -75,7 +75,7 @@ impl<T: Clone> Trie<T> {
         let mut current = &self.root;
         for c in chars {
             if !current.children.contains_key(&c) {
-                return None
+               break;
             }
             current = current.children.get(&c).unwrap();
         }
@@ -221,6 +221,15 @@ mod tests {
         assert!(!t.search("app"));
         t._insert("app");
         assert!(t.search("app"));
+    }
+
+    #[test]
+    fn test_trie2() {
+        let mut t = Trie::<TokenType>::default();
+        t._insert("apple");
+        t._insert("timestamp");
+        assert!(t.search("apple juice"));
+        assert!(t.search("timestamp without time zone"));
     }
 
 
