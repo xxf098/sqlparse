@@ -58,24 +58,24 @@ impl<T: Clone> Trie<T> {
     }
 
 
-    pub fn search(&self, key: &str) -> bool {
+    pub fn search(&self, key: &str, match_all: bool) -> bool {
         let chars = key.chars();
         let mut current = &self.root;
         for c in chars {
             if !current.children.contains_key(&c) {
-                break;
+                if match_all { return false } else { break };
             }
             current = current.children.get(&c).unwrap();
         }
         current.is_last
     }
 
-    pub fn find(&self, key: &str) -> Option<T> {
+    pub fn find(&self, key: &str, match_all: bool) -> Option<T> {
         let chars = key.chars();
         let mut current = &self.root;
         for c in chars {
             if !current.children.contains_key(&c) {
-               break;
+                if match_all { return None } else { break };
             }
             current = current.children.get(&c).unwrap();
         }
@@ -169,10 +169,10 @@ mod tests {
         t._insert("bye");
         t._insert("by");
         t._insert("their");
-        assert!(t.search("the"));
-        assert!(!t.search("these"));
-        assert!(t.search("there"));
-        assert!(!t.search("thaw"));
+        assert!(t.search("the", true));
+        assert!(!t.search("these", true));
+        assert!(t.search("there", true));
+        assert!(!t.search("thaw", true));
     }
 
     #[test]
@@ -200,9 +200,9 @@ mod tests {
         t.insert("IN", TokenType::Keyword);
         t.insert("CASE", TokenType::Keyword);
         t.insert("WHEN", TokenType::Keyword);
-        assert_eq!(t.find("SELECT"), Some(TokenType::KeywordDML));
-        assert_eq!(t.find("CASE"), Some(TokenType::Keyword));
-        assert_eq!(t.find("JOIN"), None);
+        assert_eq!(t.find("SELECT", true), Some(TokenType::KeywordDML));
+        assert_eq!(t.find("CASE", true), Some(TokenType::Keyword));
+        assert_eq!(t.find("JOIN", true), None);
         let sql = "SELECT * FROM foo.bar";
         let (pos, typ) = t.match_token(sql).unwrap();
         assert_eq!(&sql[0..pos], "SELECT");
@@ -217,10 +217,10 @@ mod tests {
     fn test_trie1() {
         let mut t = Trie::<TokenType>::default();
         t._insert("apple");
-        assert!(t.search("apple"));
-        assert!(!t.search("app"));
+        assert!(t.search("apple", true));
+        assert!(!t.search("app", true));
         t._insert("app");
-        assert!(t.search("app"));
+        assert!(t.search("app", true));
     }
 
     #[test]
@@ -228,8 +228,8 @@ mod tests {
         let mut t = Trie::<TokenType>::default();
         t._insert("apple");
         t._insert("timestamp");
-        assert!(t.search("apple juice"));
-        assert!(t.search("timestamp without time zone"));
+        assert!(t.search("apple juice", false));
+        assert!(t.search("timestamp without time zone", false));
     }
 
 
