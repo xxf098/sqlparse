@@ -200,6 +200,9 @@ mod tests {
         t.insert("IN", TokenType::Keyword);
         t.insert("CASE", TokenType::Keyword);
         t.insert("WHEN", TokenType::Keyword);
+        assert_eq!(t.find("SELECT"), Some(TokenType::KeywordDML));
+        assert_eq!(t.find("CASE"), Some(TokenType::Keyword));
+        assert_eq!(t.find("JOIN"), None);
         let sql = "SELECT * FROM foo.bar";
         let (pos, typ) = t.match_token(sql).unwrap();
         assert_eq!(&sql[0..pos], "SELECT");
