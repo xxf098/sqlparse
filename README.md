@@ -1,5 +1,8 @@
 # A SQL Parser and Formatter for Rust
 
+[![Crates.io](https://img.shields.io/crates/v/sqlparse.svg)](https://crates.io/crates/sqlparse)
+
+
 ## Example
 To parse a sql statement:
 
